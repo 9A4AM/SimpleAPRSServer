@@ -2,7 +2,7 @@
 	<head>
 		<meta charset="utf-8"/>
 		<meta name="robots" content="noindex, follow"/>
-		<title>Simple APRS Server</title>
+		<title>9A4AM APRS Server</title>
 		<link rel="stylesheet" href="leaflet/leaflet.css" />		
 		<!--[if lte IE 8]>
 			<link rel="stylesheet" href="leaflet/leaflet.ie.css" />
@@ -32,7 +32,7 @@
 		var hashusr = "";
 		if(window.location.hash) hashusr = window.location.hash.substr(1).toUpperCase();		
 	
-		var map = L.map('map', {center: [55.7, 37.7], zoom: (hashusr == "" ? 10 : 13), zoomControl: false, zoomsliderControl: true});
+		var map = L.map('map', {center: [45.8, 16.0], zoom: (hashusr == "" ? 10 : 13), zoomControl: false, zoomsliderControl: true});
 		map.doubleClickZoom.disable();
 		map.on('dblclick', function(e) { UpdateData('MARKER', 'Never', e.latlng.lat.toFixed(7), e.latlng.lng.toFixed(7), 0, 0, 'I am', '', 0, '/"', 0, 'My marker by double click', ''); });
 
@@ -239,15 +239,14 @@
 		var marker_cache = [];
 		
 		//	UPDATE CLIENT DATA
-		var UpdateData = function(user,dt,lat,lon,speed,heading,source,id,age,symbol,registered,comment,status,caption)
+		var UpdateData = function(user,dt,lat,lon,speed,heading,source,id,age,symbol,registered,comment,status,caption,metera)
 		{
 			if(marker_cache.length == 0)
 				map.setView([lat,lon]);
 				
 			var sip = symbolToImage(symbol);
-			var sipx = '<div style="display:inline-block;overflow:hidden;height:24px;width:24px;font-weight:bold;color:white;text-align:center;padding:3px 1px 1px 1px;font-size:14px;' + sip[0] + '">&nbsp;' + sip[1] + '&nbsp;</div>';	
-		
-			var txt = '<div><table cellpadding="1" cellspacing="1" border="0" style="font-size:12px;">';
+			var sipx = '<div style="display:inline-block;overflow:hidden;height:24px;width:24px;font-weight:bold;color:white;text-align:center;padding:3px 1px 1px 1px;font-size:14px;' + sip[0] + '">&nbsp;' + sip[1] + '&nbsp;</div>';
+		    var txt = '<div><table cellpadding="1" cellspacing="1" border="0" style="font-size:12px;">';
 			txt += '<tr><td>Source:</td><td> '+source+' </td></tr>';
 			txt += '<tr><td>Received:</td><td> '+dt+' UTC</td></tr>';
 			txt += '<tr><td rowspan="3">Position:</td><td style="border-top: solid 1px navy;"> '+lat + ' ' + (lat > 0 ? "N" : "S") +' &nbsp; '+lon+' '+ (lon > 0 ? "E" : "W") + '</td></tr>';
@@ -259,7 +258,7 @@
 			txt += '<tr><td style="border-bottom: solid 1px navy;"> '+lat3+' &nbsp;  '+lon3+'</td></tr>';
 			txt += '<tr><td>Speed:</td><td> '+speed+' km/h; '+(speed * 0.62137119).toFixed(1)+' mph; '+(speed / 1.852).toFixed(1)+' knots</td></tr>';
 			txt += '<tr><td>Heading:</td><td> '+heading+'&deg; '+HeadingToText(heading)+'</td></tr>';						
-			txt += '<tr><td>Comment:</td><td> <span style="color:navy;font-style:italic;">'+comment+'</span> </td></tr>';
+			txt += '<tr><td>Comment:</td><td> <span style="color:navy;font-style:italic;">'+comment+' Feet; '+(caption * 0.3048).toFixed(1)+' m;  </span> </td></tr>';
 			txt += '<tr><td>Status:</td><td> <span style="color:maroon;font-style:italic;">'+status+'</span> </td></tr>';
 			txt += '</div>';			
 						
@@ -518,7 +517,7 @@
 			if(data.indexOf(">>") < 0) return;		
 			var aCom = data.match(/^(\d{1,2}:\d{1,2}:\d{1,2}\s\d{1,2}.\d{1,2}.\d{2,4}\sUTC)\s(\S+)\s>>\s([\d.\-]+)\s([\d.\-]+)\s([\d.\-]+)\s(\d+)\s(\d+)\s(\S\S)/);			
 			if((aCom == null) || (aCom.length == 0)) return;
-			UpdateData(aCom[2],new Date(),parseFloat(aCom[3]),parseFloat(aCom[4]),parseInt(aCom[7]),parseInt(aCom[6]),"APRS-IS",aCom[2],0,aCom[8],0,'Altitude: '+aCom[5],data);			
+						UpdateData(aCom[2],new Date(),parseFloat(aCom[3]),parseFloat(aCom[4]),parseInt(aCom[7]),parseInt(aCom[6]),"APRS-IS",aCom[2],0,aCom[8],0,'Altitude: '+aCom[5],data,parseFloat(aCom[5]));	
 			if(hashusr == aCom[2]) Follow();
 		}			
 		
